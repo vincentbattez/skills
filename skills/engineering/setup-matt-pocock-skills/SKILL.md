@@ -27,6 +27,7 @@ Look at the current repo to understand its starting state. Read whatever exists;
 - `docs/agents/` — does this skill's prior output already exist?
 - `.scratch/` — sign that a local-markdown issue tracker convention is already in use
 - Is the `triage` skill installed? (a `triage` skill folder alongside this one, or `triage` in your available skills.) This decides whether Section B runs at all.
+- Is Things 3 mirroring available? Run `command -v things` — the `things` CLI is macOS-only. Combined with the `things3` skill being installed, this decides whether Section D runs at all. If it is available, also run `things projects --json` and `things areas --json` so Section D can propose a project.
 - Monorepo signals — a `pnpm-workspace.yaml`, a `workspaces` field in `package.json`, or a populated `packages/*` with its own `src/`. Present only in a genuinely large multi-package repo; their absence means single-context, which is almost every repo.
 
 ### 2. Present findings and ask
@@ -56,9 +57,23 @@ If it is installed, ask exactly one question:
 
 The defaults are the five canonical roles, each label string equal to its name: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. On **yes**, write them as-is. Only if the user says no — usually because their tracker already uses other names (e.g. `bug:triage` for `needs-triage`) — collect the overrides so `triage` applies existing labels instead of creating duplicates.
 
+If the tracker addresses labels by ID rather than by name (Linear's `list_issue_labels`, GitLab's label ids), list the labels once the vocabulary is settled and record each ID in the table's **Tracker label ID** column, plus any pre-existing type labels (`Bug`, `Feature`, …). Drop that column for name-only trackers.
+
 **Section C — Domain docs.** Default to **single-context** — one `CONTEXT.md` + `docs/adr/` at the repo root. This fits almost every repo; write it without asking.
 
 Offer **multi-context** — a root `CONTEXT-MAP.md` pointing to per-context `CONTEXT.md` files — only when exploration found monorepo signals. Then confirm which layout they want.
+
+**Section D — Things 3 mirroring.** Skip this section entirely if the `things` CLI or the `things3` skill is missing (exploration told you) — mirroring is macOS-only.
+
+If both are present, default to **on** and ask only which Things project receives the tasks:
+
+> Mirror new work for this repo as a Things 3 task, in project **X**? (recommended: **yes**)
+
+The root of a work item only, never its children — a feature split into 10 tickets stays a single task. Each task also carries a checklist of the manual acceptance checks the user runs personally once the issue is done (`--checklist-item`) — mention it, don't ask about it.
+
+Propose the project whose title best matches the repo or its domain — match loosely, the titles carry emoji prefixes (repo `wootonpad` → `👨‍💻 Wooton`). If nothing matches, propose creating one with `things add-project "<title>" --area "<area>"`, picking the closest existing area from `things areas --json`; on refusal, skip mirroring for this repo.
+
+Record the choice by appending the [things3-mirror.md](./things3-mirror.md) section to `docs/agents/issue-tracker.md`, with the confirmed project title substituted in. It works the same for any tracker — GitHub, GitLab, local markdown, or other.
 
 ### 3. Confirm and edit
 
@@ -88,7 +103,7 @@ The block:
 
 ### Issue tracker
 
-[one-line summary of where issues are tracked]. See `docs/agents/issue-tracker.md`.
+[one-line summary of where issues are tracked]. [When Section D ran: "New work is also mirrored as a Things 3 task via the `things3` skill — the root of a work item only, never its children."] Read `docs/agents/issue-tracker.md` before creating any issue.
 
 ### Triage labels
 
@@ -101,6 +116,8 @@ The block:
 
 Include the `### Triage labels` sub-block, and write `docs/agents/triage-labels.md`, only when `triage` is installed and Section B ran. When it isn't, both are omitted.
 
+The `Read … before creating any issue` wording is deliberate: several skills inline the tracker basics from this block and would otherwise never open `docs/agents/issue-tracker.md`. Keep it imperative, and drop the Things 3 sentence when Section D was skipped.
+
 Then write the docs files using the seed templates in this skill folder as a starting point:
 
 - [issue-tracker-github.md](./issue-tracker-github.md) — GitHub issue tracker
@@ -108,6 +125,7 @@ Then write the docs files using the seed templates in this skill folder as a sta
 - [issue-tracker-local.md](./issue-tracker-local.md) — local-markdown issue tracker
 - [triage-labels.md](./triage-labels.md) — label mapping (only if `triage` is installed)
 - [domain.md](./domain.md) — domain doc consumer rules + layout
+- [things3-mirror.md](./things3-mirror.md) — Things 3 mirroring section, appended to `docs/agents/issue-tracker.md` (only if Section D ran)
 
 For "other" issue trackers, write `docs/agents/issue-tracker.md` from scratch using the user's description.
 
