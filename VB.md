@@ -6,6 +6,9 @@ conflit git explicite au lieu d'un écrasement silencieux.
 
 ## Câblage
 
+Emplacement : `agentic-dev/skills/mattpocock-skills/` — repo git autonome, ignoré par le
+`.gitignore` d'agentic-dev (règle `/skills/*`). Ne pas le tracker en submodule.
+
 `~/.claude/skills/<nom>` → symlink vers `skills/<catégorie>/<nom>` de ce repo (23 skills).
 Backup des anciennes cibles : `~/.claude/skills/.relink-backup.json`.
 
